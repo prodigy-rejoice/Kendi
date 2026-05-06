@@ -58,6 +58,7 @@ class WithdrawView extends StackedView<WithdrawViewModel> {
                     bankName: viewModel.bankName,
                     accountNumber: viewModel.bankAccountNumber,
                     employeeName: viewModel.employeeName,
+                    onChangeBank: viewModel.onChangeBankTapped,
                   ),
                   verticalSpaceLarge,
                   // ── Amount input ────────────────────────────────────────
@@ -240,11 +241,13 @@ class _BankDetailsCard extends StatelessWidget {
   final String bankName;
   final String accountNumber;
   final String employeeName;
+  final VoidCallback? onChangeBank;
 
   const _BankDetailsCard({
     required this.bankName,
     required this.accountNumber,
     required this.employeeName,
+    this.onChangeBank,
   });
 
   String get _initials {
@@ -306,18 +309,24 @@ class _BankDetailsCard extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: AppColors.accentLight,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              'Verified',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: AppColors.success,
+          GestureDetector(
+            onTap: onChangeBank,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                ),
+              ),
+              child: const Text(
+                'Change',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
               ),
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 
+import '../../../app/app.bottomsheets.dart';
 import '../../../app/app.dialogs.dart';
 import '../../../app/app.locator.dart';
 import '../../../app/app.logger.dart';
@@ -13,6 +14,7 @@ import '../../../services/auth_service.dart';
 import '../../../services/payaza_service.dart';
 import '../../../services/wage_calculation_service.dart';
 import '../../../services/webhook_service.dart';
+import '../../../utils/bank_codes.dart';
 import '../../../utils/currency_formatter.dart';
 import '../../../utils/mock_data.dart';
 import '../../../utils/reference_generator.dart';
@@ -23,6 +25,7 @@ class WithdrawViewModel extends BaseViewModel {
   final _authService = locator<AuthService>();
   final _navService = locator<NavigationService>();
   final _dialogService = locator<DialogService>();
+  final _bottomSheetService = locator<BottomSheetService>();
   final _snackbarService = locator<SnackbarService>();
   final _wageCalcService = locator<WageCalculationService>();
   final _payazaService = locator<PayazaService>();
@@ -31,11 +34,21 @@ class WithdrawViewModel extends BaseViewModel {
   WageAccrual? _accrual;
   final amountController = TextEditingController();
   double _enteredAmount = 0;
+  PayazaBank? _selectedBank;
 
   String get employeeName => _authService.currentEmployee?.fullName ?? '';
-  String get bankName => _authService.currentEmployee?.bankName ?? '';
   String get bankAccountNumber =>
       _authService.currentEmployee?.bankAccountNumber ?? '';
+
+  // If the user has picked a bank in this session, show that; otherwise use the
+  // employee's registered bank from auth.
+  String get bankName =>
+      _selectedBank?.name ?? _authService.currentEmployee?.bankName ?? '';
+  String get _activeBankCode =>
+      _selectedBank?.code ?? _authService.currentEmployee?.bankCode ?? '';
+
+  PayazaBank? get selectedBank => _selectedBank;
+
   String get maskedAccount {
     final acct = bankAccountNumber;
     return acct.length >= 4 ? '•••• ${acct.substring(acct.length - 4)}' : acct;
@@ -47,7 +60,6 @@ class WithdrawViewModel extends BaseViewModel {
   double get platformFee =>
       double.parse((_enteredAmount * 0.005).clamp(0, 5000).toStringAsFixed(2));
 
-  // Hint shown below the amount field — null when field is empty
   String? get amountHintText {
     if (_enteredAmount <= 0) return null;
     if (_enteredAmount > availableToWithdraw) {
@@ -104,6 +116,26 @@ class WithdrawViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  Future<void> onChangeBankTapped() async {
+    log.d('Opening bank picker');
+    final response = await _bottomSheetService.showCustomSheet(
+      variant: BottomSheetType.bankAccountPicker,
+      title: 'Select Bank',
+      isScrollControlled: true,
+    );
+    if (response?.confirmed == true && response?.data is PayazaBank) {
+      _selectedBank = response!.data as PayazaBank;
+      log.i('Bank selected: ${_selectedBank!.name} (${_selectedBank!.code})');
+      notifyListeners();
+    }
+  }
+
+  void onBankSelected(PayazaBank bank) {
+    _selectedBank = bank;
+    log.i('Bank selected: ${bank.name} (${bank.code})');
+    notifyListeners();
+  }
+
   Future<void> onConfirmTapped() async {
     if (_enteredAmount > availableToWithdraw) {
       _snackbarService.showSnackbar(
@@ -151,11 +183,11 @@ class WithdrawViewModel extends BaseViewModel {
   Future<void> _processWithdrawal() async {
     final employee = _authService.currentEmployee!;
     final reference = ReferenceGenerator.generate();
-    log.i('Processing withdrawal ₦$_enteredAmount for $employeeName | $reference');
+    log.i('Processing withdrawal ₦$_enteredAmount for $employeeName | $reference | bank: $_activeBankCode');
     try {
       final result = await _payazaService.disburseEarnedWages(
         employeeAccountNumber: employee.bankAccountNumber,
-        employeeBankCode: employee.bankCode,
+        employeeBankCode: _activeBankCode,
         employeeName: employee.fullName,
         amount: _enteredAmount,
         reference: reference,
