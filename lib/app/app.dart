@@ -27,16 +27,56 @@ import '../ui/views/withdrawal_success/withdrawal_success_view.dart';
 @StackedApp(
   routes: [
     MaterialRoute(page: SplashView, initial: true),
-    MaterialRoute(page: OnboardingView),
-    MaterialRoute(page: LoginSelectorView),
-    MaterialRoute(page: LoginView),
-    MaterialRoute(page: EmployeeDashboardView),
-    MaterialRoute(page: WithdrawView),
-    MaterialRoute(page: WithdrawalSuccessView),
-    MaterialRoute(page: EmployerDashboardView),
-    MaterialRoute(page: EmployerOnboardingView),
-    MaterialRoute(page: PayrollPoolView),
-    MaterialRoute(page: StaffManagementView),
+    CustomRoute(
+      page: OnboardingView,
+      transitionsBuilder: TransitionsBuilders.slideRight,
+      durationInMilliseconds: 250,
+    ),
+    CustomRoute(
+      page: LoginSelectorView,
+      transitionsBuilder: TransitionsBuilders.slideRight,
+      durationInMilliseconds: 250,
+    ),
+    CustomRoute(
+      page: LoginView,
+      transitionsBuilder: TransitionsBuilders.slideRight,
+      durationInMilliseconds: 250,
+    ),
+    CustomRoute(
+      page: EmployeeDashboardView,
+      transitionsBuilder: TransitionsBuilders.slideRight,
+      durationInMilliseconds: 250,
+    ),
+    CustomRoute(
+      page: WithdrawView,
+      transitionsBuilder: TransitionsBuilders.slideRight,
+      durationInMilliseconds: 250,
+    ),
+    CustomRoute(
+      page: WithdrawalSuccessView,
+      transitionsBuilder: TransitionsBuilders.slideRight,
+      durationInMilliseconds: 300,
+    ),
+    CustomRoute(
+      page: EmployerDashboardView,
+      transitionsBuilder: TransitionsBuilders.slideRight,
+      durationInMilliseconds: 250,
+    ),
+    CustomRoute(
+      page: EmployerOnboardingView,
+      transitionsBuilder: TransitionsBuilders.slideRight,
+      durationInMilliseconds: 250,
+    ),
+    CustomRoute(
+      page: PayrollPoolView,
+      transitionsBuilder: TransitionsBuilders.slideRight,
+      durationInMilliseconds: 250,
+    ),
+    CustomRoute(
+      page: StaffManagementView,
+      transitionsBuilder: TransitionsBuilders.slideRight,
+      durationInMilliseconds: 250,
+    ),
   ],
   dependencies: [
     LazySingleton(classType: NavigationService),

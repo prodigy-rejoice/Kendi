@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:stacked/stacked.dart';
 
-import '../../../utils/currency_formatter.dart';
 import '../../common/app_colors.dart';
 import '../../common/ui_helpers.dart';
 import '../../widgets/earnednow_button.dart';

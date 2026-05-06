@@ -42,6 +42,7 @@ class WithdrawViewModel extends BaseViewModel {
   }
 
   double get availableToWithdraw => _accrual?.availableToWithdraw ?? 0;
+  double get earnedAmount => _accrual?.totalAccrued ?? 0;
   double get enteredAmount => _enteredAmount;
   double get platformFee =>
       double.parse((_enteredAmount * 0.005).clamp(0, 5000).toStringAsFixed(2));

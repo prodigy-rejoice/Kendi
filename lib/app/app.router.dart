@@ -120,63 +120,123 @@ class StackedRouter extends _i1.RouterBase {
       );
     },
     _i3.OnboardingView: (data) {
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i3.OnboardingView(),
+      return _i13.PageRouteBuilder<dynamic>(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const _i3.OnboardingView(),
         settings: data,
+        transitionsBuilder: data.transition ??
+            (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+        transitionDuration: const Duration(milliseconds: 250),
       );
     },
     _i4.LoginSelectorView: (data) {
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i4.LoginSelectorView(),
+      return _i13.PageRouteBuilder<dynamic>(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const _i4.LoginSelectorView(),
         settings: data,
+        transitionsBuilder: data.transition ??
+            (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+        transitionDuration: const Duration(milliseconds: 250),
       );
     },
     _i5.LoginView: (data) {
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i5.LoginView(),
+      return _i13.PageRouteBuilder<dynamic>(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const _i5.LoginView(),
         settings: data,
+        transitionsBuilder: data.transition ??
+            (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+        transitionDuration: const Duration(milliseconds: 250),
       );
     },
     _i6.EmployeeDashboardView: (data) {
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i6.EmployeeDashboardView(),
+      return _i13.PageRouteBuilder<dynamic>(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const _i6.EmployeeDashboardView(),
         settings: data,
+        transitionsBuilder: data.transition ??
+            (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+        transitionDuration: const Duration(milliseconds: 250),
       );
     },
     _i7.WithdrawView: (data) {
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i7.WithdrawView(),
+      return _i13.PageRouteBuilder<dynamic>(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const _i7.WithdrawView(),
         settings: data,
+        transitionsBuilder: data.transition ??
+            (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+        transitionDuration: const Duration(milliseconds: 250),
       );
     },
     _i8.WithdrawalSuccessView: (data) {
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i8.WithdrawalSuccessView(),
+      return _i13.PageRouteBuilder<dynamic>(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const _i8.WithdrawalSuccessView(),
         settings: data,
+        transitionsBuilder: data.transition ??
+            (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+        transitionDuration: const Duration(milliseconds: 300),
       );
     },
     _i9.EmployerDashboardView: (data) {
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i9.EmployerDashboardView(),
+      return _i13.PageRouteBuilder<dynamic>(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const _i9.EmployerDashboardView(),
         settings: data,
+        transitionsBuilder: data.transition ??
+            (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+        transitionDuration: const Duration(milliseconds: 250),
       );
     },
     _i10.EmployerOnboardingView: (data) {
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i10.EmployerOnboardingView(),
+      return _i13.PageRouteBuilder<dynamic>(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const _i10.EmployerOnboardingView(),
         settings: data,
+        transitionsBuilder: data.transition ??
+            (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+        transitionDuration: const Duration(milliseconds: 250),
       );
     },
     _i11.PayrollPoolView: (data) {
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i11.PayrollPoolView(),
+      return _i13.PageRouteBuilder<dynamic>(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const _i11.PayrollPoolView(),
         settings: data,
+        transitionsBuilder: data.transition ??
+            (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+        transitionDuration: const Duration(milliseconds: 250),
       );
     },
     _i12.StaffManagementView: (data) {
-      return _i13.MaterialPageRoute<dynamic>(
-        builder: (context) => const _i12.StaffManagementView(),
+      return _i13.PageRouteBuilder<dynamic>(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const _i12.StaffManagementView(),
         settings: data,
+        transitionsBuilder: data.transition ??
+            (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+        transitionDuration: const Duration(milliseconds: 250),
       );
     },
   };
