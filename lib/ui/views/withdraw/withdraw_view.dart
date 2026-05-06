@@ -42,8 +42,7 @@ class WithdrawView extends StackedView<WithdrawViewModel> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -362,7 +361,8 @@ class _Chip extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final bool isAccent;
-  const _Chip({required this.label, required this.onTap, this.isAccent = false});
+  const _Chip(
+      {required this.label, required this.onTap, this.isAccent = false});
 
   @override
   Widget build(BuildContext context) {

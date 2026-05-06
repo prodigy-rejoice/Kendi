@@ -18,7 +18,8 @@ class PoolBalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final total = balance + totalWithdrawn;
-    final utilizationFraction = total > 0 ? (totalWithdrawn / total).clamp(0.0, 1.0) : 0.0;
+    final utilizationFraction =
+        total > 0 ? (totalWithdrawn / total).clamp(0.0, 1.0) : 0.0;
     final utilizationPct = utilizationFraction * 100;
 
     final barColor = utilizationFraction < 0.5
@@ -88,7 +89,8 @@ class PoolBalanceCard extends StatelessWidget {
               if (onViewPool != null)
                 TextButton.icon(
                   onPressed: onViewPool,
-                  icon: const Icon(Icons.open_in_new, size: 14, color: Colors.white),
+                  icon: const Icon(Icons.open_in_new,
+                      size: 14, color: Colors.white),
                   label: const Text(
                     'View Pool',
                     style: TextStyle(color: Colors.white, fontSize: 13),
@@ -98,8 +100,8 @@ class PoolBalanceCard extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
                   ),
                 ),
             ],

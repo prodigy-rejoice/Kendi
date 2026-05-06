@@ -118,8 +118,7 @@ class WageProgressCard extends StatelessWidget {
                   children: [
                     const Text(
                       'Available to withdraw',
-                      style:
-                          TextStyle(color: Colors.white60, fontSize: 12),
+                      style: TextStyle(color: Colors.white60, fontSize: 12),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -134,8 +133,7 @@ class WageProgressCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     const Text(
                       'Employer pays · Free for you',
-                      style:
-                          TextStyle(color: Colors.white38, fontSize: 11),
+                      style: TextStyle(color: Colors.white38, fontSize: 11),
                     ),
                   ],
                 ),

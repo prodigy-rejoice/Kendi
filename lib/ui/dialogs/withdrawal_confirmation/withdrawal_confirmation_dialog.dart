@@ -127,8 +127,7 @@ class WithdrawalConfirmationDialog
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () =>
-                        completer(DialogResponse(confirmed: true)),
+                    onPressed: () => completer(DialogResponse(confirmed: true)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accent,
                       foregroundColor: Colors.white,

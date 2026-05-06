@@ -45,7 +45,8 @@ class StaffManagementViewModel extends BaseViewModel {
     _rows = MockData.employees.map((employee) {
       final withdrawn = MockData.withdrawals
           .where((w) =>
-              w.employeeId == employee.id && w.status == WithdrawalStatus.success)
+              w.employeeId == employee.id &&
+              w.status == WithdrawalStatus.success)
           .fold(0.0, (sum, w) => sum + w.amount);
       final accrual = _wageCalcService.calculateAccrual(
         employee: employee,
@@ -63,7 +64,8 @@ class StaffManagementViewModel extends BaseViewModel {
         }
       } catch (_) {}
 
-      return StaffRow(employee: employee, accrual: accrual, lastStatus: lastStatus);
+      return StaffRow(
+          employee: employee, accrual: accrual, lastStatus: lastStatus);
     }).toList();
 
     log.i('Loaded ${_rows.length} staff rows');

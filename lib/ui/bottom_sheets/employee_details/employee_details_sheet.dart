@@ -68,8 +68,7 @@ class EmployeeDetailsSheet extends StackedView<EmployeeDetailsSheetModel> {
           SizedBox(
             width: double.infinity,
             child: TextButton(
-              onPressed: () =>
-                  completer?.call(SheetResponse(confirmed: true)),
+              onPressed: () => completer?.call(SheetResponse(confirmed: true)),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.textSecondary,
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -212,7 +211,8 @@ class _BankDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.account_balance, size: 16, color: AppColors.textSecondary),
+        const Icon(Icons.account_balance,
+            size: 16, color: AppColors.textSecondary),
         const SizedBox(width: 8),
         Text(
           '${employee.bankName}  ·  •••• ${employee.bankAccountNumber.length >= 4 ? employee.bankAccountNumber.substring(employee.bankAccountNumber.length - 4) : employee.bankAccountNumber}',

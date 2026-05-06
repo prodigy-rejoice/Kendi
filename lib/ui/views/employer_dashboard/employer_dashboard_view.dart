@@ -25,20 +25,15 @@ class EmployerDashboardView extends StackedView<EmployerDashboardViewModel> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: _buildAppBar(viewModel),
-      floatingActionButton: viewModel.isDevMode
-          ? _DemoFab(onTap: viewModel.onDemoTapped)
-          : null,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1200),
             child: SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Today's summary banner ──────────────────────────────
                   _TodaySummaryBanner(
                     summary: viewModel.todaySummary,
                     isLive: viewModel.isLive,
@@ -112,8 +107,8 @@ class EmployerDashboardView extends StackedView<EmployerDashboardViewModel> {
         LiveIndicator(isLive: vm.isLive),
         const SizedBox(width: 20),
         TextButton.icon(
-          onPressed: vm.onManageStaffTapped,
-          icon: const Icon(Icons.people_outline, size: 16),
+          onPressed: vm.onAddStaffTapped,
+          icon: const Icon(Icons.person_add_rounded, size: 16),
           label: const Text('Staff'),
           style: TextButton.styleFrom(
             foregroundColor: AppColors.primary,
@@ -366,7 +361,8 @@ class _PulsingTileState extends State<_PulsingTile>
           boxShadow: widget.pulse
               ? [
                   BoxShadow(
-                    color: AppColors.accent.withValues(alpha: _glow.value * 0.35),
+                    color:
+                        AppColors.accent.withValues(alpha: _glow.value * 0.35),
                     blurRadius: 12 + _glow.value * 8,
                     spreadRadius: _glow.value * 2,
                   ),
@@ -404,28 +400,6 @@ class _EmptyActivity extends StatelessWidget {
             style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// ── Demo FAB ──────────────────────────────────────────────────────────────────
-
-class _DemoFab extends StatelessWidget {
-  final VoidCallback onTap;
-  const _DemoFab({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton.extended(
-      onPressed: onTap,
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
-      elevation: 4,
-      icon: const Icon(Icons.flash_on_rounded, size: 18),
-      label: const Text(
-        'Demo',
-        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
       ),
     );
   }

@@ -20,8 +20,7 @@ class WageCalculationService {
     final now = asOf ?? DateTime.now();
     // In development mode always simulate day 20 so the demo shows
     // ₦100,000 accrued and ₦50,000 available regardless of actual date.
-    final daysWorked =
-        dotenv.env['APP_ENV'] == 'development' ? 20 : now.day;
+    final daysWorked = dotenv.env['APP_ENV'] == 'development' ? 20 : now.day;
     final dailyRate = employee.monthlySalary / 30;
     final totalAccrued = dailyRate * daysWorked;
     final maxAccessible = totalAccrued * 0.5;

@@ -17,18 +17,16 @@ class PayazaVirtualAccount {
 
   factory PayazaVirtualAccount.fromJson(Map<String, dynamic> json) {
     // Payaza wraps response data inside responseBody
-    final body =
-        (json['responseBody'] as Map<String, dynamic>?) ?? json;
+    final body = (json['responseBody'] as Map<String, dynamic>?) ?? json;
     return PayazaVirtualAccount(
       accountNumber: body['account_number'] as String? ?? '',
       accountName: body['account_name'] as String? ?? '',
       bankName: body['bank_name'] as String? ?? 'Providus Bank',
       bankCode: body['bank_code'] as String? ?? '140',
       currency: body['currency'] as String? ?? 'NGN',
-      employerId:
-          (body['metadata'] as Map<String, dynamic>?)?['employer_id']
-                  as String? ??
-              '',
+      employerId: (body['metadata'] as Map<String, dynamic>?)?['employer_id']
+              as String? ??
+          '',
     );
   }
 

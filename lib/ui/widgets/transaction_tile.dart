@@ -28,9 +28,8 @@ class TransactionTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isSuccess
-                  ? AppColors.accentLight
-                  : const Color(0xFFFFEBEE),
+              color:
+                  isSuccess ? AppColors.accentLight : const Color(0xFFFFEBEE),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -76,8 +75,7 @@ class TransactionTile extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
                   color: isSuccess
                       ? AppColors.accentLight

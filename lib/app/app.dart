@@ -7,6 +7,7 @@ import '../services/payaza_service.dart';
 import '../services/storage_service.dart';
 import '../services/wage_calculation_service.dart';
 import '../services/webhook_service.dart';
+import '../ui/bottom_sheets/add_staff/add_staff_sheet.dart';
 import '../ui/bottom_sheets/bank_account_picker/bank_account_picker_sheet.dart';
 import '../ui/bottom_sheets/employee_details/employee_details_sheet.dart';
 import '../ui/bottom_sheets/withdrawal_history/withdrawal_history_sheet.dart';
@@ -99,6 +100,7 @@ import '../ui/views/withdrawal_success/withdrawal_success_view.dart';
     StackedBottomsheet(classType: EmployeeDetailsSheet),
     StackedBottomsheet(classType: WithdrawalHistorySheet),
     StackedBottomsheet(classType: BankAccountPickerSheet),
+    StackedBottomsheet(classType: AddStaffSheet),
   ],
 )
 class App {}

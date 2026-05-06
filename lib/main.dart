@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:stacked_services/stacked_services.dart';
@@ -7,6 +8,7 @@ import 'app/app.dialogs.dart';
 import 'app/app.locator.dart';
 import 'app/app.logger.dart';
 import 'app/app.router.dart';
+import 'firebase_options.dart';
 import 'services/auth_service.dart';
 import 'ui/common/app_theme.dart';
 import 'utils/mock_data.dart';
@@ -16,6 +18,9 @@ final log = getLogger('main');
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await setupLocator();
   setupDialogUi();
   setupBottomSheetUi();

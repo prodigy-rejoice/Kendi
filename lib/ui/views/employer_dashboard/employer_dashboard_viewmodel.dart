@@ -1,27 +1,30 @@
 import 'dart:async';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:stacked/stacked.dart';
 import 'package:stacked_services/stacked_services.dart';
 
+import '../../../app/app.bottomsheets.dart';
 import '../../../app/app.locator.dart';
 import '../../../app/app.logger.dart';
 import '../../../app/app.router.dart';
+import '../../../models/employee.dart';
 import '../../../models/employer.dart';
 import '../../../models/withdrawal_request.dart';
 import '../../../services/webhook_service.dart';
 import '../../../utils/currency_formatter.dart';
 import '../../../utils/mock_data.dart';
-import '../../../utils/reference_generator.dart';
 
 class EmployerDashboardViewModel extends BaseViewModel {
   final log = getLogger('EmployerDashboardViewModel');
 
   final _navService = locator<NavigationService>();
+  final _bottomSheetService = locator<BottomSheetService>();
+  final _snackbarService = locator<SnackbarService>();
   final _webhookService = locator<WebhookService>();
 
   late Employer _employer;
   List<WithdrawalRequest> _activity = [];
+  List<Employee> _extraStaff = [];
   StreamSubscription<WebhookEvent>? _webhookSub;
   bool _isLive = false;
   bool _pulseActive = false;
@@ -29,10 +32,9 @@ class EmployerDashboardViewModel extends BaseViewModel {
   // ── Getters ──────────────────────────────────────────────────────────────
   String get companyName => _employer.companyName;
   double get poolBalance => _employer.payrollPoolBalance;
-  int get staffCount => MockData.employees.length;
+  int get staffCount => MockData.employees.length + _extraStaff.length;
   bool get isLive => _isLive;
   bool get pulseActive => _pulseActive;
-  bool get isDevMode => dotenv.env['APP_ENV'] == 'development';
   List<WithdrawalRequest> get activity => List.unmodifiable(_activity);
 
   double get totalWithdrawnToday {
@@ -69,8 +71,9 @@ class EmployerDashboardViewModel extends BaseViewModel {
   }
 
   String employeeNameFor(String employeeId) {
+    final all = [...MockData.employees, ..._extraStaff];
     try {
-      return MockData.employees.firstWhere((e) => e.id == employeeId).fullName;
+      return all.firstWhere((e) => e.id == employeeId).fullName;
     } catch (_) {
       return 'Unknown';
     }
@@ -95,7 +98,6 @@ class EmployerDashboardViewModel extends BaseViewModel {
         _activity = List.from(MockData.withdrawals)
           ..sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
         notifyListeners();
-        // Pulse fades after 3 seconds
         Future.delayed(const Duration(seconds: 3), () {
           _pulseActive = false;
           notifyListeners();
@@ -104,14 +106,55 @@ class EmployerDashboardViewModel extends BaseViewModel {
     });
   }
 
-  // ── Demo trigger (hidden — only in development) ───────────────────────────
-  void onDemoTapped() {
-    log.i('DEMO: triggering live webhook simulation');
-    _webhookService.simulateTransferSuccess(
-      reference: ReferenceGenerator.generate(),
-      amount: 30000,
-      employeeName: 'Amaka Okonkwo',
+  // ── Add staff ─────────────────────────────────────────────────────────────
+  Future<void> onAddStaffTapped() async {
+    final response = await _bottomSheetService.showCustomSheet(
+      variant: BottomSheetType.addStaff,
+      isScrollControlled: true,
     );
+    if (response == null) return;
+    if (response.data == 'open_single') {
+      await _openSingleStaffForm();
+    } else if (response.data == 'open_bulk') {
+      await _openBulkUpload();
+    }
+  }
+
+  Future<void> _openSingleStaffForm() async {
+    final response = await _bottomSheetService.showCustomSheet(
+      variant: BottomSheetType.addStaff,
+      isScrollControlled: true,
+      data: 'single',
+    );
+    if (response?.confirmed == true && response?.data is Employee) {
+      final employee = response!.data as Employee;
+      _extraStaff.add(employee);
+      notifyListeners();
+      _snackbarService.showSnackbar(
+        message: '${employee.fullName} added successfully',
+        duration: const Duration(seconds: 3),
+      );
+      log.i('Staff added: ${employee.fullName} | Total: $staffCount');
+    }
+  }
+
+  Future<void> _openBulkUpload() async {
+    final response = await _bottomSheetService.showCustomSheet(
+      variant: BottomSheetType.addStaff,
+      isScrollControlled: true,
+      data: 'bulk',
+    );
+    if (response?.data == 'download_template') {
+      _snackbarService.showSnackbar(
+        message: 'Template downloaded — fill in and re-upload',
+        duration: const Duration(seconds: 3),
+      );
+    } else if (response?.data == 'upload_csv') {
+      _snackbarService.showSnackbar(
+        message: 'CSV upload coming soon — use single staff for now',
+        duration: const Duration(seconds: 3),
+      );
+    }
   }
 
   // ── Navigation ────────────────────────────────────────────────────────────
