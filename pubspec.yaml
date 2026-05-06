@@ -1,0 +1,55 @@
+name: kendi
+description: Earned Wage Access platform powered by Payaza
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Stacked architecture
+  stacked: ^3.4.0
+  stacked_services: ^1.4.0
+
+  # HTTP client — all Payaza API calls
+  dio: ^5.4.0
+
+  # Dependency injection
+  get_it: ^7.6.0
+
+  # Local storage
+  shared_preferences: ^2.2.0
+
+  # Environment variables
+  flutter_dotenv: ^5.1.0
+
+  # Logging
+  logger: ^2.0.2+1
+
+  # UI
+  flutter_svg: ^2.0.9
+  shimmer: ^3.0.0
+  fl_chart: ^0.67.0
+  intl: ^0.19.0
+  gap: ^3.0.1
+  lottie: ^3.0.0
+  percent_indicator: ^4.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  build_runner: ^2.4.0
+  stacked_generator: ^1.3.0
+  mockito: ^5.4.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - .env
+    - assets/lottie/
