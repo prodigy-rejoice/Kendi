@@ -206,9 +206,17 @@ class WithdrawViewModel extends BaseViewModel {
     } on DioException catch (e, st) {
       log.e('API error', error: e, stackTrace: st);
       setError('Payment failed. Please try again.');
+      _snackbarService.showSnackbar(
+        message: 'Transfer failed. Please try again shortly.',
+        duration: const Duration(seconds: 4),
+      );
     } catch (e, st) {
       log.e('Unexpected error during withdrawal', error: e, stackTrace: st);
       setError('An unexpected error occurred. Please try again.');
+      _snackbarService.showSnackbar(
+        message: 'Something went wrong. Please try again.',
+        duration: const Duration(seconds: 4),
+      );
     }
   }
 

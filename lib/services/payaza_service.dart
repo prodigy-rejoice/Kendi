@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -98,37 +100,41 @@ class PayazaService {
     required double amount,
     required String reference,
   }) async {
+    final accountRef = 'ACREF_${DateTime.now().millisecondsSinceEpoch}';
     log.i('Disbursing ₦$amount to $employeeName | ref: $reference');
+    log.d('account_ref: $accountRef | tx_ref: $reference');
     final pin = int.parse(dotenv.env['PAYAZA_TRANSACTION_PIN'] ?? '0');
+    final requestBody = {
+      'transaction_type': 'mobile_money',
+      'service_payload': {
+        'payout_amount': amount,
+        'transaction_pin': pin,
+        'account_reference': accountRef,
+        'country': 'NGA',
+        'currency': 'NGN',
+        'payout_beneficiaries': [
+          {
+            'credit_amount': amount,
+            'account_name': employeeName,
+            'account_number': employeeAccountNumber,
+            'bank_code': employeeBankCode,
+            'narration': 'EarnedNow — Earned Wage Access',
+            'transaction_reference': reference,
+            'sender': {
+              'sender_name': 'EarnedNow Platform',
+              'sender_id': 1,
+              'sender_phone_number': '0000000000',
+              'sender_address': 'Lagos, Nigeria',
+            },
+          },
+        ],
+      },
+    };
+    log.d('Request body: ${json.encode(requestBody)}');
     try {
       final response = await _dio.post(
         '/payout-receptor/payout',
-        data: {
-          'transaction_type': 'mobile_money',
-          'service_payload': {
-            'payout_amount': amount,
-            'transaction_pin': pin,
-            'account_reference': reference,
-            'country': 'NGA',
-            'currency': 'NGN',
-            'payout_beneficiaries': [
-              {
-                'credit_amount': amount,
-                'account_name': employeeName,
-                'account_number': employeeAccountNumber,
-                'bank_code': employeeBankCode,
-                'narration': 'EarnedNow — Earned Wage Access',
-                'transaction_reference': reference,
-                'sender': {
-                  'sender_name': 'EarnedNow Platform',
-                  'sender_id': 1,
-                  'sender_phone_number': '0000000000',
-                  'sender_address': 'Lagos, Nigeria',
-                },
-              },
-            ],
-          },
-        },
+        data: requestBody,
       );
       log.i('Disbursement queued: $reference');
       return PayazaTransferResponse.fromJson(
