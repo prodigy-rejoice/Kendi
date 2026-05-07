@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 
-import '../../../models/withdrawal_request.dart';
 import '../../../utils/currency_formatter.dart';
 import '../../common/app_colors.dart';
 import '../../common/ui_helpers.dart';
@@ -188,7 +187,6 @@ class _StaffTable extends StatelessWidget {
         _HeaderCell('DAYS'),
         _HeaderCell('ACCRUED'),
         _HeaderCell('AVAILABLE'),
-        _HeaderCell('STATUS'),
       ],
     );
   }
@@ -217,7 +215,6 @@ class _StaffTable extends StatelessWidget {
               ? AppColors.success
               : AppColors.textSecondary,
         ),
-        _StatusCell(status: row.lastStatus, onTap: onTap),
       ],
     );
   }
@@ -328,74 +325,3 @@ class _EmployeeCell extends StatelessWidget {
   }
 }
 
-class _StatusCell extends StatelessWidget {
-  final WithdrawalStatus? status;
-  final VoidCallback? onTap;
-
-  const _StatusCell({this.status, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        child: status == null
-            ? const Text(
-                '—',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
-              )
-            : _StatusBadge(status: status!),
-      ),
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  final WithdrawalStatus status;
-  const _StatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final (color, bg, label) = switch (status) {
-      WithdrawalStatus.success => (
-          AppColors.success,
-          AppColors.accentLight,
-          'SUCCESS'
-        ),
-      WithdrawalStatus.failed => (
-          AppColors.error,
-          const Color(0xFFFFEBEE),
-          'FAILED'
-        ),
-      WithdrawalStatus.processing => (
-          AppColors.warning,
-          const Color(0xFFFFF3E0),
-          'PROCESSING'
-        ),
-      WithdrawalStatus.pending => (
-          AppColors.textSecondary,
-          const Color(0xFFF5F5F5),
-          'PENDING'
-        ),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: color,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
-}

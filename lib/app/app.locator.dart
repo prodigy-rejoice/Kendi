@@ -13,10 +13,13 @@ import 'package:stacked_services/src/snackbar/snackbar_service.dart';
 import 'package:stacked_shared/stacked_shared.dart';
 
 import '../services/auth_service.dart';
+import '../services/employee_store.dart';
+import '../services/employer_store.dart';
 import '../services/payaza_service.dart';
 import '../services/storage_service.dart';
 import '../services/wage_calculation_service.dart';
 import '../services/webhook_service.dart';
+import '../services/withdrawal_store.dart';
 
 final locator = StackedLocator.instance;
 
@@ -38,4 +41,7 @@ Future<void> setupLocator({
   locator.registerLazySingleton(() => StorageService());
   locator.registerLazySingleton(() => WageCalculationService());
   locator.registerLazySingleton(() => WebhookService());
+  locator.registerLazySingleton(() => EmployeeStore());
+  locator.registerLazySingleton(() => EmployerStore());
+  locator.registerLazySingleton(() => WithdrawalStore());
 }

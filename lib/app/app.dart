@@ -3,10 +3,13 @@ import 'package:stacked/stacked_annotations.dart';
 import 'package:stacked_services/stacked_services.dart';
 
 import '../services/auth_service.dart';
+import '../services/employee_store.dart';
+import '../services/employer_store.dart';
 import '../services/payaza_service.dart';
 import '../services/storage_service.dart';
 import '../services/wage_calculation_service.dart';
 import '../services/webhook_service.dart';
+import '../services/withdrawal_store.dart';
 import '../ui/bottom_sheets/add_staff/add_staff_sheet.dart';
 import '../ui/bottom_sheets/bank_account_picker/bank_account_picker_sheet.dart';
 import '../ui/bottom_sheets/employee_details/employee_details_sheet.dart';
@@ -90,6 +93,9 @@ import '../ui/views/withdrawal_success/withdrawal_success_view.dart';
     LazySingleton(classType: StorageService),
     LazySingleton(classType: WageCalculationService),
     LazySingleton(classType: WebhookService),
+    LazySingleton(classType: EmployeeStore),
+    LazySingleton(classType: EmployerStore),
+    LazySingleton(classType: WithdrawalStore),
   ],
   dialogs: [
     StackedDialog(classType: WithdrawalConfirmationDialog),

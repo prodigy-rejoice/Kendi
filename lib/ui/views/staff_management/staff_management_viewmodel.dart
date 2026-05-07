@@ -7,19 +7,16 @@ import '../../../app/app.logger.dart';
 import '../../../models/employee.dart';
 import '../../../models/wage_accrual.dart';
 import '../../../models/withdrawal_request.dart';
+import '../../../services/employee_store.dart';
 import '../../../services/wage_calculation_service.dart';
+import '../../../services/withdrawal_store.dart';
 import '../../../utils/mock_data.dart';
 
 class StaffRow {
   final Employee employee;
   final WageAccrual accrual;
-  final WithdrawalStatus? lastStatus;
 
-  const StaffRow({
-    required this.employee,
-    required this.accrual,
-    this.lastStatus,
-  });
+  const StaffRow({required this.employee, required this.accrual});
 }
 
 class StaffManagementViewModel extends BaseViewModel {
@@ -28,13 +25,15 @@ class StaffManagementViewModel extends BaseViewModel {
   final _navService = locator<NavigationService>();
   final _bottomSheetService = locator<BottomSheetService>();
   final _wageCalcService = locator<WageCalculationService>();
+  final _employeeStore = locator<EmployeeStore>();
+  final _withdrawalStore = locator<WithdrawalStore>();
 
   List<StaffRow> _rows = [];
 
   List<StaffRow> get rows => List.unmodifiable(_rows);
   int get staffCount => _rows.length;
   double get totalMonthlyPayroll =>
-      MockData.employees.fold(0.0, (sum, e) => sum + e.monthlySalary);
+      _employeeStore.allEmployees.fold(0.0, (sum, e) => sum + e.monthlySalary);
   double get totalAccruedThisCycle =>
       _rows.fold(0.0, (sum, r) => sum + r.accrual.totalAccrued);
   double get totalAvailable =>
@@ -42,8 +41,11 @@ class StaffManagementViewModel extends BaseViewModel {
 
   void init() {
     log.i('init()');
-    _rows = MockData.employees.map((employee) {
-      final withdrawn = MockData.withdrawals
+    final baseIds = MockData.employees.map((e) => e.id).toSet();
+
+    _rows = _employeeStore.allEmployees.map((employee) {
+      final isBaseEmployee = baseIds.contains(employee.id);
+      final withdrawn = _withdrawalStore.all
           .where((w) =>
               w.employeeId == employee.id &&
               w.status == WithdrawalStatus.success)
@@ -51,21 +53,9 @@ class StaffManagementViewModel extends BaseViewModel {
       final accrual = _wageCalcService.calculateAccrual(
         employee: employee,
         alreadyWithdrawnThisCycle: withdrawn,
+        useDemoDay: isBaseEmployee,
       );
-
-      WithdrawalStatus? lastStatus;
-      try {
-        final employeeWithdrawals = MockData.withdrawals
-            .where((w) => w.employeeId == employee.id)
-            .toList()
-          ..sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
-        if (employeeWithdrawals.isNotEmpty) {
-          lastStatus = employeeWithdrawals.first.status;
-        }
-      } catch (_) {}
-
-      return StaffRow(
-          employee: employee, accrual: accrual, lastStatus: lastStatus);
+      return StaffRow(employee: employee, accrual: accrual);
     }).toList();
 
     log.i('Loaded ${_rows.length} staff rows');
