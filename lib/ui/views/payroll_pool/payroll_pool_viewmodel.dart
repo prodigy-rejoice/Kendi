@@ -6,6 +6,9 @@ import '../../../app/app.locator.dart';
 import '../../../app/app.logger.dart';
 import '../../../models/employer.dart';
 import '../../../models/withdrawal_request.dart';
+import '../../../services/employer_store.dart';
+import '../../../services/payaza_service.dart';
+import '../../../services/withdrawal_store.dart';
 import '../../../utils/currency_formatter.dart';
 import '../../../utils/mock_data.dart';
 
@@ -13,18 +16,19 @@ class PayrollPoolViewModel extends BaseViewModel {
   final log = getLogger('PayrollPoolViewModel');
 
   final _navService = locator<NavigationService>();
+  final _payazaService = locator<PayazaService>();
+  final _employerStore = locator<EmployerStore>();
+  final _withdrawalStore = locator<WithdrawalStore>();
 
   late Employer _employer;
   bool _justCopied = false;
 
-  static const String _bankName = 'Providus Bank';
-
-  String get virtualAccountNumber => _employer.payazaVirtualAccountNumber;
-  String get bankName => _bankName;
-  double get poolBalance => _employer.payrollPoolBalance;
+  String get virtualAccountNumber => _employerStore.virtualAccountNumber;
+  String get bankName => _employerStore.poolBankName;
+  double get poolBalance => _employerStore.poolBalance;
   bool get justCopied => _justCopied;
 
-  double get totalWithdrawnThisCycle => MockData.withdrawals
+  double get totalWithdrawnThisCycle => _withdrawalStore.all
       .where((w) =>
           w.employerId == _employer.id && w.status == WithdrawalStatus.success)
       .fold(0.0, (sum, w) => sum + w.amount);
@@ -41,8 +45,25 @@ class PayrollPoolViewModel extends BaseViewModel {
   void init() {
     log.i('init()');
     _employer = MockData.employer;
-    log.i('Pool: ${CurrencyFormatter.formatNGN(poolBalance)} | '
+    log.i('VA: $virtualAccountNumber | '
+        'Pool: ${CurrencyFormatter.formatNGN(poolBalance)} | '
         'Disbursed: ${CurrencyFormatter.formatNGN(totalWithdrawnThisCycle)}');
+    _fetchPoolBalance();
+  }
+
+  Future<void> _fetchPoolBalance() async {
+    final accountNumber = virtualAccountNumber;
+    if (accountNumber == MockData.employer.payazaVirtualAccountNumber) {
+      log.w('No live VA number yet — skipping balance fetch');
+      return;
+    }
+    try {
+      final balance = await _payazaService.getPoolBalance(accountNumber);
+      _employerStore.setPoolBalance(balance);
+      notifyListeners();
+    } catch (e) {
+      log.w('Balance fetch failed — showing mock balance: $e');
+    }
   }
 
   Future<void> copyAccountNumber() async {

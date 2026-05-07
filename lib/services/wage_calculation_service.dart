@@ -16,11 +16,14 @@ class WageCalculationService {
     required Employee employee,
     required double alreadyWithdrawnThisCycle,
     DateTime? asOf,
+    bool useDemoDay = true,
   }) {
     final now = asOf ?? DateTime.now();
-    // In development mode always simulate day 20 so the demo shows
-    // ₦100,000 accrued and ₦50,000 available regardless of actual date.
-    final daysWorked = dotenv.env['APP_ENV'] == 'development' ? 20 : now.day;
+    // useDemoDay=true: simulate day 20 for base demo employees so the demo
+    // shows ₦100,000 accrued / ₦50,000 available regardless of real date.
+    // useDemoDay=false: newly added staff use the actual calendar day.
+    final daysWorked =
+        useDemoDay && dotenv.env['APP_ENV'] == 'development' ? 20 : now.day;
     final dailyRate = employee.monthlySalary / 30;
     final totalAccrued = dailyRate * daysWorked;
     final maxAccessible = totalAccrued * 0.5;

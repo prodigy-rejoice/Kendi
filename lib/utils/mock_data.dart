@@ -18,7 +18,7 @@ class MockData {
   static final employees = [
     Employee(
         id: 'staff_001',
-        fullName: 'Amaka Okonkwo',
+        fullName: 'Ayomide Odunfa',
         monthlySalary: 150000,
         staffId: 'LGH/NRS/001',
         bankName: 'GTBANK PLC',
@@ -70,33 +70,5 @@ class MockData {
         employmentStartDate: DateTime(2021, 6, 20)),
   ];
 
-  static final withdrawals = [
-    WithdrawalRequest(
-        id: 'wdr_001',
-        employeeId: 'staff_001',
-        employerId: 'emp_LGH_001',
-        amount: 30000,
-        platformFee: 150,
-        payazaReference: 'EN_REF_20260415_001',
-        status: WithdrawalStatus.success,
-        requestedAt: DateTime(2026, 4, 15)),
-    WithdrawalRequest(
-        id: 'wdr_002',
-        employeeId: 'staff_001',
-        employerId: 'emp_LGH_001',
-        amount: 20000,
-        platformFee: 100,
-        payazaReference: 'EN_REF_20260422_001',
-        status: WithdrawalStatus.success,
-        requestedAt: DateTime(2026, 4, 22)),
-    WithdrawalRequest(
-        id: 'wdr_003',
-        employeeId: 'staff_003',
-        employerId: 'emp_LGH_001',
-        amount: 25000,
-        platformFee: 125,
-        payazaReference: 'EN_REF_20260505_001',
-        status: WithdrawalStatus.success,
-        requestedAt: DateTime.now().subtract(const Duration(hours: 3))),
-  ];
+  static final withdrawals = <WithdrawalRequest>[];
 }

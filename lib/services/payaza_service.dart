@@ -31,68 +31,82 @@ class PayazaService {
 
   // ── VIRTUAL ACCOUNTS ─────────────────────────────────────────────────────
 
-  /// Creates the employer's payroll pool reserved virtual account.
-  /// Employer's payroll lands here — EarnedNow is the gatekeeper.
   Future<PayazaVirtualAccount> createPayrollPool({
     required String employerId,
     required String companyName,
     required String email,
     required String phone,
     required String accountReference,
+    required String bvn,
+    required bool bvnValidated,
+    required String firstName,
+    required String lastName,
   }) async {
-    log.i('Creating payroll pool for: $companyName');
-    final nameParts = companyName.trim().split(' ');
-    final firstName = nameParts.first;
-    final lastName = nameParts.length > 1 ? nameParts.skip(1).join(' ') : '-';
+    log.i('═══ PAYAZA API CALL: CREATE VIRTUAL ACCOUNT ═══');
+    log.i('Company: $companyName | ref: $accountReference');
+    final requestBody = {
+      'service_payload': {
+        'account_name': companyName,
+        'account_type': 'Static',
+        'bank_code': '140',
+        'bvn': bvn,
+        'bvn_validated': bvnValidated,
+        'account_reference': accountReference,
+        'customer_first_name': firstName,
+        'customer_last_name': lastName,
+        'customer_email': email,
+        'customer_phone_number': phone,
+      },
+    };
+    log.d('Request body: ${json.encode(requestBody)}');
     try {
       final response = await _dio.post(
-        '/merchant-collection/merchant/virtual_account/generate_virtual_account/',
-        data: {
-          'service_payload': {
-            'account_name': companyName,
-            'account_type': 'Static',
-            'bank_code': '140',
-            'bvn': '00000000000',
-            'bvn_validated': true,
-            'account_reference': accountReference,
-            'customer_first_name': firstName,
-            'customer_last_name': lastName,
-            'customer_email': email,
-            'customer_phone_number': phone,
-          },
-        },
+        '/live/merchant-collection/merchant/virtual_account/generate_virtual_account/',
+        data: requestBody,
       );
-      log.i('Pool created for: $companyName');
+      log.i('═══ PAYAZA RESPONSE: VA created ═══');
+      log.d('Response: ${response.data}');
       return PayazaVirtualAccount.fromJson(
         response.data as Map<String, dynamic>,
       );
     } on DioException catch (e, st) {
-      log.e('Failed to create pool', error: e, stackTrace: st);
+      log.e('Failed to create virtual account', error: e, stackTrace: st);
       rethrow;
     }
   }
 
-  /// Fetches the current state of a virtual account.
   Future<Map<String, dynamic>> getVirtualAccountDetail(
     String accountNumber,
   ) async {
-    log.d('Fetching virtual account detail: $accountNumber');
+    log.d('Fetching VA detail: $accountNumber');
     try {
       final r = await _dio.get(
-        '/merchant-collection/merchant/virtual_account/detail/virtual_account/$accountNumber',
+        '/live/merchant-collection/merchant/virtual_account/detail/virtual_account/$accountNumber',
       );
-      final body = (r.data['responseBody'] as Map<String, dynamic>?) ?? r.data;
-      return body;
+      return (r.data['responseBody'] as Map<String, dynamic>?) ??
+          r.data as Map<String, dynamic>;
     } on DioException catch (e, st) {
-      log.e('Failed to fetch virtual account detail', error: e, stackTrace: st);
+      log.e('Failed to fetch VA detail', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
+
+  Future<double> getPoolBalance(String virtualAccountNumber) async {
+    log.i('═══ PAYAZA API CALL: GET POOL BALANCE ═══');
+    try {
+      final detail = await getVirtualAccountDetail(virtualAccountNumber);
+      final raw = detail['available_balance'] ?? detail['balance'] ?? 0;
+      final balance = (raw as num).toDouble();
+      log.i('═══ PAYAZA RESPONSE: pool balance = ₦${balance.toStringAsFixed(0)} ═══');
+      return balance;
+    } on DioException catch (e, st) {
+      log.e('Failed to fetch pool balance', error: e, stackTrace: st);
       rethrow;
     }
   }
 
   // ── DISBURSEMENTS ────────────────────────────────────────────────────────
 
-  /// The core EarnedNow transaction.
-  /// Sends earned wages FROM the employer's Payaza pool TO the employee's bank.
   Future<PayazaTransferResponse> disburseEarnedWages({
     required String employeeAccountNumber,
     required String employeeBankCode,
@@ -101,6 +115,7 @@ class PayazaService {
     required String reference,
   }) async {
     final accountRef = 'ACREF_${DateTime.now().millisecondsSinceEpoch}';
+    log.i('═══ PAYAZA API CALL: DISBURSE EARNED WAGES ═══');
     log.i('Disbursing ₦$amount to $employeeName | ref: $reference');
     log.d('account_ref: $accountRef | tx_ref: $reference');
     final pin = int.parse(dotenv.env['PAYAZA_TRANSACTION_PIN'] ?? '0');
@@ -130,13 +145,16 @@ class PayazaService {
         ],
       },
     };
-    log.d('Request body: ${json.encode(requestBody)}');
+    log.i('PIN value being sent: ${int.parse(dotenv.env["PAYAZA_TRANSACTION_PIN"] ?? "0")}');
+    log.i('PIN type: ${int.parse(dotenv.env["PAYAZA_TRANSACTION_PIN"] ?? "0").runtimeType}');
+    log.i('Amount: $amount | AccountNumber: $employeeAccountNumber | BankCode: $employeeBankCode');
+    log.i('PAYAZA REQUEST: ${json.encode(requestBody)}');
     try {
       final response = await _dio.post(
         '/payout-receptor/payout',
         data: requestBody,
       );
-      log.i('Disbursement queued: $reference');
+      log.i('═══ PAYAZA RESPONSE: disbursement queued $reference ═══');
       return PayazaTransferResponse.fromJson(
         response.data as Map<String, dynamic>,
       );
@@ -149,17 +167,20 @@ class PayazaService {
 
   // ── TRANSACTION STATUS ────────────────────────────────────────────────────
 
-  /// Queries the status of a payout by its transaction reference.
   Future<Map<String, dynamic>> queryTransactionStatus(
     String transactionReference,
   ) async {
-    log.d('Querying status: $transactionReference');
+    log.i('═══ PAYAZA API CALL: QUERY TRANSACTION STATUS ═══');
+    log.i('Reference: $transactionReference');
     try {
       final r = await _dio.get(
-        '/merchant-collection/transfer_notification_controller/transaction-query',
+        '/live/merchant-collection/transfer_notification_controller/transaction-query',
         queryParameters: {'transaction_reference': transactionReference},
       );
-      final body = (r.data['responseBody'] as Map<String, dynamic>?) ?? r.data;
+      final body = (r.data['responseBody'] as Map<String, dynamic>?) ??
+          r.data as Map<String, dynamic>;
+      final status = body['status'] ?? body['transaction_status'] ?? body['transactionStatus'];
+      log.i('═══ PAYAZA RESPONSE: status = $status ═══');
       return body;
     } on DioException catch (e, st) {
       log.e('Status query failed', error: e, stackTrace: st);
@@ -169,25 +190,30 @@ class PayazaService {
 
   // ── ACCOUNT ENQUIRY ───────────────────────────────────────────────────────
 
-  /// Resolves the account holder name for a given account number and bank.
   Future<String> resolveAccountName({
     required String accountNumber,
     required String bankCode,
   }) async {
-    log.d('Enquiry: $accountNumber @ $bankCode');
+    log.i('═══ PAYAZA API CALL: ACCOUNT NAME ENQUIRY ═══');
+    log.i('Account: $accountNumber | Bank: $bankCode');
+    final requestBody = {
+      'service_payload': {
+        'currency': 'NGN',
+        'bank_code': bankCode,
+        'account_number': accountNumber,
+      },
+    };
+    log.d('Request body: ${json.encode(requestBody)}');
     try {
       final r = await _dio.post(
-        '/payaza-account/api/v1/mainaccounts/merchant/provider/enquiry',
-        data: {
-          'service_payload': {
-            'currency': 'NGN',
-            'bank_code': bankCode,
-            'account_number': accountNumber,
-          },
-        },
+        '/live/payaza-account/api/v1/mainaccounts/merchant/provider/enquiry',
+        data: requestBody,
       );
-      final body = (r.data['responseBody'] as Map<String, dynamic>?) ?? r.data;
-      return body['account_name'] as String? ?? '';
+      final body = (r.data['responseBody'] as Map<String, dynamic>?) ??
+          r.data as Map<String, dynamic>;
+      final name = body['account_name'] as String? ?? '';
+      log.i('═══ PAYAZA RESPONSE: account_name = "$name" ═══');
+      return name;
     } on DioException catch (e, st) {
       log.e('Account enquiry failed', error: e, stackTrace: st);
       rethrow;
