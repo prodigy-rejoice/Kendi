@@ -17,7 +17,20 @@ final log = getLogger('main');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (_) {
+    // .env not available (e.g. web production build).
+    // Values are injected at compile time via --dart-define.
+    dotenv.testLoad(fileInput: [
+      'PAYAZA_BASE_URL=${const String.fromEnvironment('PAYAZA_BASE_URL', defaultValue: 'https://api.payaza.africa/live')}',
+      'PAYAZA_SECRET_KEY=${const String.fromEnvironment('PAYAZA_SECRET_KEY')}',
+      'PAYAZA_TRANSACTION_PIN=${const String.fromEnvironment('PAYAZA_TRANSACTION_PIN', defaultValue: '0')}',
+      'X_TENANT_ID=${const String.fromEnvironment('X_TENANT_ID')}',
+      'APP_ENV=${const String.fromEnvironment('APP_ENV', defaultValue: 'production')}',
+      'PAYAZA_SANDBOX_MODE=${const String.fromEnvironment('PAYAZA_SANDBOX_MODE', defaultValue: 'false')}',
+    ].join('\n'));
+  }
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
