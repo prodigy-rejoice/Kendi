@@ -6,9 +6,10 @@ import '../../../app/app.logger.dart';
 import '../../../app/app.router.dart';
 import '../../../models/withdrawal_request.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/payaza_service.dart';
 import '../../../services/wage_calculation_service.dart';
 import '../../../services/webhook_service.dart';
-import '../../../utils/mock_data.dart';
+import '../../../services/withdrawal_store.dart';
 
 class WithdrawalSuccessViewModel extends BaseViewModel {
   final log = getLogger('WithdrawalSuccessViewModel');
@@ -17,8 +18,11 @@ class WithdrawalSuccessViewModel extends BaseViewModel {
   final _navService = locator<NavigationService>();
   final _webhookService = locator<WebhookService>();
   final _wageCalcService = locator<WageCalculationService>();
+  final _payazaService = locator<PayazaService>();
+  final _withdrawalStore = locator<WithdrawalStore>();
 
   bool _disposed = false;
+  String _txStatus = 'pending';
 
   double get withdrawnAmount => _authService.lastWithdrawalAmount ?? 0;
   String get reference => _authService.lastWithdrawalReference ?? '';
@@ -31,18 +35,19 @@ class WithdrawalSuccessViewModel extends BaseViewModel {
     return acct.length >= 4 ? '•••• ${acct.substring(acct.length - 4)}' : acct;
   }
 
+  String get txStatus => _txStatus;
+
   double get updatedAvailable {
     final employee = _authService.currentEmployee;
     if (employee == null) return 0;
     final now = DateTime.now();
-    final totalWithdrawn = MockData.withdrawals
-            .where((w) =>
-                w.employeeId == employee.id &&
-                w.status == WithdrawalStatus.success &&
-                w.requestedAt.year == now.year &&
-                w.requestedAt.month == now.month)
-            .fold(0.0, (sum, w) => sum + w.amount) +
-        withdrawnAmount;
+    final totalWithdrawn = _withdrawalStore.all
+        .where((w) =>
+            w.employeeId == employee.id &&
+            w.status == WithdrawalStatus.success &&
+            w.requestedAt.year == now.year &&
+            w.requestedAt.month == now.month)
+        .fold(0.0, (sum, w) => sum + w.amount);
     return _wageCalcService
         .calculateAccrual(
           employee: employee,
@@ -52,7 +57,7 @@ class WithdrawalSuccessViewModel extends BaseViewModel {
   }
 
   void init() {
-    log.i('init() — scheduling webhook simulation after 1s');
+    log.i('init() — reference: $reference');
     Future.delayed(const Duration(seconds: 1), () {
       if (!_disposed) {
         _webhookService.simulateTransferSuccess(
@@ -63,6 +68,27 @@ class WithdrawalSuccessViewModel extends BaseViewModel {
         log.i('Webhook simulation fired: $reference');
       }
     });
+    _checkTransactionStatus();
+  }
+
+  Future<void> _checkTransactionStatus() async {
+    final ref = reference;
+    if (ref.isEmpty) return;
+    try {
+      await Future.delayed(const Duration(milliseconds: 2000));
+      if (_disposed) return;
+      final result = await _payazaService.queryTransactionStatus(ref);
+      if (_disposed) return;
+      final raw = result['status'] ??
+          result['transaction_status'] ??
+          result['transactionStatus'] ??
+          'pending';
+      _txStatus = raw.toString().toLowerCase();
+      log.i('Transaction status: $_txStatus');
+      notifyListeners();
+    } catch (e) {
+      log.w('Status check failed — showing processing: $e');
+    }
   }
 
   void goToDashboard() {

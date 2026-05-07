@@ -71,7 +71,10 @@ class WithdrawalSuccessView extends StackedView<WithdrawalSuccessViewModel> {
                   const SizedBox(height: 32),
                   // ── Reference chip ──────────────────────────────────────
                   _ReferenceChip(reference: viewModel.reference),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
+                  // ── Transaction status badge ────────────────────────────
+                  _TxStatusBadge(status: viewModel.txStatus),
+                  const SizedBox(height: 16),
                   // ── Updated balance ─────────────────────────────────────
                   Text(
                     'New balance available: '
@@ -138,6 +141,60 @@ class WithdrawalSuccessView extends StackedView<WithdrawalSuccessViewModel> {
 
   @override
   bool get disposeViewModel => true;
+}
+
+class _TxStatusBadge extends StatelessWidget {
+  final String status;
+  const _TxStatusBadge({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final normalized = status.toLowerCase();
+    final (color, bg, label, icon) =
+        (normalized == 'successful' || normalized == 'success')
+            ? (
+                const Color(0xFF2E7D32),
+                const Color(0xFFB9F6CA),
+                'Confirmed',
+                Icons.check_circle_rounded,
+              )
+            : normalized == 'failed'
+                ? (
+                    const Color(0xFFC62828),
+                    const Color(0xFFFFEBEE),
+                    'Failed',
+                    Icons.cancel_rounded,
+                  )
+                : (
+                    const Color(0xFFF57C00),
+                    const Color(0xFFFFF3E0),
+                    'Processing',
+                    Icons.hourglass_top_rounded,
+                  );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _ReferenceChip extends StatelessWidget {

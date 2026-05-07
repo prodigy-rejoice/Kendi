@@ -59,6 +59,28 @@ class WithdrawView extends StackedView<WithdrawViewModel> {
                     employeeName: viewModel.employeeName,
                     onChangeBank: viewModel.onChangeBankTapped,
                   ),
+                  if (viewModel.resolvedAccountName.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const SizedBox(width: 4),
+                        const Icon(Icons.check_circle_rounded,
+                            size: 13, color: AppColors.success),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            'Account verified: ${viewModel.resolvedAccountName}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.success,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   verticalSpaceLarge,
                   // ── Amount input ────────────────────────────────────────
                   Row(
@@ -106,13 +128,6 @@ class WithdrawView extends StackedView<WithdrawViewModel> {
                   verticalSpaceMedium,
                   // ── Quick amount chips ──────────────────────────────────
                   _QuickAmountRow(viewModel: viewModel),
-                  if (viewModel.enteredAmount >= 1000) ...[
-                    verticalSpaceMedium,
-                    _FeeBreakdownCard(
-                      amount: viewModel.enteredAmount,
-                      fee: viewModel.platformFee,
-                    ),
-                  ],
                   verticalSpaceLarge,
                   EarnedNowButton(
                     label: 'Confirm Withdrawal',
@@ -394,87 +409,3 @@ class _Chip extends StatelessWidget {
   }
 }
 
-// ── Fee breakdown ─────────────────────────────────────────────────────────────
-
-class _FeeBreakdownCard extends StatelessWidget {
-  final double amount;
-  final double fee;
-
-  const _FeeBreakdownCard({required this.amount, required this.fee});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.accentLight),
-      ),
-      child: Column(
-        children: [
-          _FeeRow(
-            label: 'You receive',
-            value: CurrencyFormatter.formatNGN(amount),
-            bold: true,
-          ),
-          const SizedBox(height: 8),
-          _FeeRow(
-            label: 'Platform fee (0.5%)',
-            value: '${CurrencyFormatter.formatNGN(fee)} — Employer pays',
-            valueColor: AppColors.success,
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 6),
-            child: Divider(height: 1, color: AppColors.accentLight),
-          ),
-          _FeeRow(
-            label: 'Your cost',
-            value: '₦0 — Free for you',
-            valueColor: AppColors.success,
-            bold: true,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeeRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color? valueColor;
-  final bool bold;
-
-  const _FeeRow({
-    required this.label,
-    required this.value,
-    this.valueColor,
-    this.bold = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-            fontWeight: bold ? FontWeight.w600 : FontWeight.w400,
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 13,
-            color: valueColor ?? AppColors.textPrimary,
-            fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}

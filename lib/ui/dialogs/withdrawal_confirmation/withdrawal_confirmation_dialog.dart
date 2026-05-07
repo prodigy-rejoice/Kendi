@@ -29,7 +29,6 @@ class WithdrawalConfirmationDialog
     final bankName = data['bank_name'] as String? ?? '';
     final maskedAccount = data['masked_account'] as String? ?? '';
     final employeeName = data['employee_name'] as String? ?? '';
-    final fee = (data['fee'] as num?)?.toDouble() ?? 0;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -96,13 +95,6 @@ class WithdrawalConfirmationDialog
               label: 'Source',
               value: "Lagos General Hospital's Payaza pool",
             ),
-            verticalSpaceSmall,
-            _ConfirmRow(
-              icon: Icons.receipt_outlined,
-              label: 'Your fee',
-              value: '₦0 — Employer pays ${CurrencyFormatter.formatNGN(fee)}',
-              valueColor: AppColors.success,
-            ),
             verticalSpaceLarge,
             Row(
               children: [
@@ -160,13 +152,11 @@ class _ConfirmRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  final Color? valueColor;
 
   const _ConfirmRow({
     required this.icon,
     required this.label,
     required this.value,
-    this.valueColor,
   });
 
   @override
@@ -185,9 +175,9 @@ class _ConfirmRow extends StatelessWidget {
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 13,
-              color: valueColor ?? AppColors.textPrimary,
+              color: AppColors.textPrimary,
               fontWeight: FontWeight.w600,
             ),
             overflow: TextOverflow.ellipsis,

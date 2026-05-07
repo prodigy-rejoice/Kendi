@@ -8,15 +8,16 @@ import '../../../app/app.dialogs.dart';
 import '../../../app/app.locator.dart';
 import '../../../app/app.logger.dart';
 import '../../../app/app.router.dart';
+import '../../../models/employee.dart';
 import '../../../models/wage_accrual.dart';
 import '../../../models/withdrawal_request.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/payaza_service.dart';
 import '../../../services/wage_calculation_service.dart';
 import '../../../services/webhook_service.dart';
+import '../../../services/withdrawal_store.dart';
 import '../../../utils/bank_codes.dart';
 import '../../../utils/currency_formatter.dart';
-import '../../../utils/mock_data.dart';
 import '../../../utils/reference_generator.dart';
 
 class WithdrawViewModel extends BaseViewModel {
@@ -30,11 +31,13 @@ class WithdrawViewModel extends BaseViewModel {
   final _wageCalcService = locator<WageCalculationService>();
   final _payazaService = locator<PayazaService>();
   final _webhookService = locator<WebhookService>();
+  final _withdrawalStore = locator<WithdrawalStore>();
 
   WageAccrual? _accrual;
   final amountController = TextEditingController();
   double _enteredAmount = 0;
   PayazaBank? _selectedBank;
+  String _resolvedAccountName = '';
 
   String get employeeName => _authService.currentEmployee?.fullName ?? '';
   String get bankAccountNumber =>
@@ -53,6 +56,8 @@ class WithdrawViewModel extends BaseViewModel {
     final acct = bankAccountNumber;
     return acct.length >= 4 ? '•••• ${acct.substring(acct.length - 4)}' : acct;
   }
+
+  String get resolvedAccountName => _resolvedAccountName;
 
   double get availableToWithdraw => _accrual?.availableToWithdraw ?? 0;
   double get earnedAmount => _accrual?.totalAccrued ?? 0;
@@ -81,7 +86,7 @@ class WithdrawViewModel extends BaseViewModel {
     try {
       final employee = _authService.currentEmployee!;
       final now = DateTime.now();
-      final alreadyWithdrawn = MockData.withdrawals
+      final alreadyWithdrawn = _withdrawalStore.all
           .where((w) =>
               w.employeeId == employee.id &&
               w.status == WithdrawalStatus.success &&
@@ -180,26 +185,49 @@ class WithdrawViewModel extends BaseViewModel {
     }
   }
 
+  void _recordWithdrawal({
+    required Employee employee,
+    required String reference,
+    required double amount,
+  }) {
+    _withdrawalStore.add(WithdrawalRequest(
+      id: 'WDR_${DateTime.now().millisecondsSinceEpoch}',
+      employeeId: employee.id,
+      employerId: employee.employerId,
+      amount: amount,
+      platformFee: 0,
+      payazaReference: reference,
+      status: WithdrawalStatus.success,
+      requestedAt: DateTime.now(),
+      completedAt: DateTime.now(),
+    ));
+  }
+
   Future<void> _processWithdrawal() async {
     final employee = _authService.currentEmployee!;
     final reference = ReferenceGenerator.generate();
+    final disburseName = _resolvedAccountName.isNotEmpty
+        ? _resolvedAccountName
+        : employee.fullName;
     log.i(
-        'Processing withdrawal ₦$_enteredAmount for $employeeName | $reference | bank: $_activeBankCode');
+        'Processing withdrawal ₦$_enteredAmount for $disburseName | $reference | bank: $_activeBankCode');
     try {
       final result = await _payazaService.disburseEarnedWages(
         employeeAccountNumber: employee.bankAccountNumber,
         employeeBankCode: _activeBankCode,
-        employeeName: employee.fullName,
+        employeeName: disburseName,
         amount: _enteredAmount,
         reference: reference,
       );
       log.i(
           'Disbursement response: ${result.status.name} | ${result.reference}');
-      _authService.lastWithdrawalAmount = _enteredAmount;
-      _authService.lastWithdrawalReference =
+      final finalRef =
           result.reference.isNotEmpty ? result.reference : reference;
+      _recordWithdrawal(employee: employee, reference: finalRef, amount: _enteredAmount);
+      _authService.lastWithdrawalAmount = _enteredAmount;
+      _authService.lastWithdrawalReference = finalRef;
       _webhookService.simulateTransferSuccess(
-        reference: _authService.lastWithdrawalReference ?? reference,
+        reference: finalRef,
         amount: _enteredAmount,
         employeeName: employeeName,
       );
@@ -208,6 +236,7 @@ class WithdrawViewModel extends BaseViewModel {
       if (e.response?.statusCode == 500) {
         log.w('Payaza sandbox 500 — proceeding with demo flow');
         await Future.delayed(const Duration(milliseconds: 1500));
+        _recordWithdrawal(employee: employee, reference: reference, amount: _enteredAmount);
         _authService.lastWithdrawalAmount = _enteredAmount;
         _authService.lastWithdrawalReference = reference;
         _webhookService.simulateTransferSuccess(
