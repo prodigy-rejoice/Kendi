@@ -109,7 +109,7 @@ class EmployerDashboardView extends StackedView<EmployerDashboardViewModel> {
         TextButton.icon(
           onPressed: vm.onAddStaffTapped,
           icon: const Icon(Icons.person_add_rounded, size: 16),
-          label: const Text('Staff'),
+          label: const Text('Add Staff'),
           style: TextButton.styleFrom(
             foregroundColor: AppColors.primary,
             backgroundColor: AppColors.primary.withValues(alpha: 0.08),
@@ -397,7 +397,16 @@ class _EmptyActivity extends StatelessWidget {
           SizedBox(height: 12),
           Text(
             'No withdrawals yet',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Activity will appear here when employees withdraw.',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
         ],
       ),

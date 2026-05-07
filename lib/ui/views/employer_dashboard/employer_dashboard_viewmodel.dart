@@ -10,7 +10,10 @@ import '../../../app/app.router.dart';
 import '../../../models/employee.dart';
 import '../../../models/employer.dart';
 import '../../../models/withdrawal_request.dart';
+import '../../../services/employee_store.dart';
+import '../../../services/employer_store.dart';
 import '../../../services/webhook_service.dart';
+import '../../../services/withdrawal_store.dart';
 import '../../../utils/currency_formatter.dart';
 import '../../../utils/mock_data.dart';
 
@@ -21,18 +24,21 @@ class EmployerDashboardViewModel extends BaseViewModel {
   final _bottomSheetService = locator<BottomSheetService>();
   final _snackbarService = locator<SnackbarService>();
   final _webhookService = locator<WebhookService>();
+  final _employeeStore = locator<EmployeeStore>();
+  final _employerStore = locator<EmployerStore>();
+  final _withdrawalStore = locator<WithdrawalStore>();
 
   late Employer _employer;
   List<WithdrawalRequest> _activity = [];
-  List<Employee> _extraStaff = [];
   StreamSubscription<WebhookEvent>? _webhookSub;
+  StreamSubscription<List<WithdrawalRequest>>? _storeSub;
   bool _isLive = false;
   bool _pulseActive = false;
 
   // ── Getters ──────────────────────────────────────────────────────────────
   String get companyName => _employer.companyName;
   double get poolBalance => _employer.payrollPoolBalance;
-  int get staffCount => MockData.employees.length + _extraStaff.length;
+  int get staffCount => _employeeStore.count;
   bool get isLive => _isLive;
   bool get pulseActive => _pulseActive;
   List<WithdrawalRequest> get activity => List.unmodifiable(_activity);
@@ -71,9 +77,10 @@ class EmployerDashboardViewModel extends BaseViewModel {
   }
 
   String employeeNameFor(String employeeId) {
-    final all = [...MockData.employees, ..._extraStaff];
     try {
-      return all.firstWhere((e) => e.id == employeeId).fullName;
+      return _employeeStore.allEmployees
+          .firstWhere((e) => e.id == employeeId)
+          .fullName;
     } catch (_) {
       return 'Unknown';
     }
@@ -83,20 +90,32 @@ class EmployerDashboardViewModel extends BaseViewModel {
   void init() {
     log.i('init()');
     _employer = MockData.employer;
-    _activity = List.from(MockData.withdrawals)
+    _activity = _withdrawalStore.all
+        .where((w) => w.employerId == _employer.id)
+        .toList()
       ..sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
+    _listenToWithdrawals();
     _listenToWebhooks();
     log.i('Pool: ₦$poolBalance | Staff: $staffCount | Activity: ${_activity.length}');
+  }
+
+  void _listenToWithdrawals() {
+    _storeSub = _withdrawalStore.stream.listen((all) {
+      log.i('WithdrawalStore updated — refreshing activity feed');
+      _activity = all
+          .where((w) => w.employerId == _employer.id)
+          .toList()
+        ..sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
+      notifyListeners();
+    });
   }
 
   void _listenToWebhooks() {
     _webhookSub = _webhookService.stream.listen((event) {
       if (event.type == WebhookEventType.transferSuccess) {
-        log.i('Webhook — refreshing employer activity feed');
+        log.i('Webhook — pulsing live indicator');
         _isLive = true;
         _pulseActive = true;
-        _activity = List.from(MockData.withdrawals)
-          ..sort((a, b) => b.requestedAt.compareTo(a.requestedAt));
         notifyListeners();
         Future.delayed(const Duration(seconds: 3), () {
           _pulseActive = false;
@@ -128,7 +147,7 @@ class EmployerDashboardViewModel extends BaseViewModel {
     );
     if (response?.confirmed == true && response?.data is Employee) {
       final employee = response!.data as Employee;
-      _extraStaff.add(employee);
+      _employeeStore.addEmployee(employee);
       notifyListeners();
       _snackbarService.showSnackbar(
         message: '${employee.fullName} added successfully',
@@ -163,6 +182,7 @@ class EmployerDashboardViewModel extends BaseViewModel {
 
   @override
   void dispose() {
+    _storeSub?.cancel();
     _webhookSub?.cancel();
     super.dispose();
   }

@@ -11,7 +11,7 @@ import '../../../models/withdrawal_request.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/wage_calculation_service.dart';
 import '../../../services/webhook_service.dart';
-import '../../../utils/mock_data.dart';
+import '../../../services/withdrawal_store.dart';
 
 class EmployeeDashboardViewModel extends BaseViewModel {
   final log = getLogger('EmployeeDashboardViewModel');
@@ -20,6 +20,7 @@ class EmployeeDashboardViewModel extends BaseViewModel {
   final _navService = locator<NavigationService>();
   final _wageCalcService = locator<WageCalculationService>();
   final _webhookService = locator<WebhookService>();
+  final _withdrawalStore = locator<WithdrawalStore>();
 
   WageAccrual? _accrual;
   List<WithdrawalRequest> _history = [];
@@ -67,7 +68,7 @@ class EmployeeDashboardViewModel extends BaseViewModel {
     try {
       final employee = _authService.currentEmployee!;
       final now = DateTime.now();
-      final alreadyWithdrawn = MockData.withdrawals
+      final alreadyWithdrawn = _withdrawalStore.all
           .where((w) =>
               w.employeeId == employee.id &&
               w.status == WithdrawalStatus.success &&
@@ -79,7 +80,7 @@ class EmployeeDashboardViewModel extends BaseViewModel {
         employee: employee,
         alreadyWithdrawnThisCycle: alreadyWithdrawn,
       );
-      _history = MockData.withdrawals
+      _history = _withdrawalStore.all
           .where((w) => w.employeeId == employee.id)
           .toList();
 
