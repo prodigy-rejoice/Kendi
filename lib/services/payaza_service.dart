@@ -14,11 +14,11 @@ class PayazaService {
   PayazaService() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: dotenv.env['PAYAZA_BASE_URL']!,
+        baseUrl: dotenv.env['PAYAZA_BASE_URL'] ?? 'https://api.payaza.africa/live',
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         headers: {
-          'Authorization': 'Payaza ${dotenv.env["PAYAZA_SECRET_KEY"]}',
+          'Authorization': 'Payaza ${dotenv.env["PAYAZA_SECRET_KEY"] ?? ''}',
           'X-TenantID': dotenv.env['X_TENANT_ID'] ?? '',
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -133,10 +133,10 @@ class PayazaService {
             'account_name': employeeName,
             'account_number': employeeAccountNumber,
             'bank_code': employeeBankCode,
-            'narration': 'EarnedNow — Earned Wage Access',
+            'narration': 'Kendi — Earned Wage Access',
             'transaction_reference': reference,
             'sender': {
-              'sender_name': 'EarnedNow Platform',
+              'sender_name': 'Kendi Platform',
               'sender_id': 1,
               'sender_phone_number': '0000000000',
               'sender_address': 'Lagos, Nigeria',

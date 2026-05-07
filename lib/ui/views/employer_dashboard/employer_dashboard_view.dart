@@ -21,6 +21,7 @@ class EmployerDashboardView extends StackedView<EmployerDashboardViewModel> {
     Widget? child,
   ) {
     if (viewModel.isBusy) return const LoadingOverlay();
+    final hPad = MediaQuery.of(context).size.width < 600 ? 16.0 : 32.0;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -30,7 +31,7 @@ class EmployerDashboardView extends StackedView<EmployerDashboardViewModel> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1200),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -200,7 +201,7 @@ class _TodaySummaryBanner extends StatelessWidget {
   }
 }
 
-// ── Stats row ─────────────────────────────────────────────────────────────────
+// ── Stats row — wraps to 2-col grid on mobile, single row on desktop ──────────
 
 class _StatsRow extends StatelessWidget {
   final EmployerDashboardViewModel viewModel;
@@ -208,43 +209,94 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: StatCard(
-            label: 'Active Staff',
-            value: '${viewModel.staffCount}',
-            icon: Icons.people_rounded,
-            iconColor: AppColors.primary,
-            subtitle: 'enrolled employees',
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: StatCard(
-            label: "Today's Disbursements",
-            value: CurrencyFormatter.formatNGN(viewModel.totalWithdrawnToday),
-            icon: Icons.send_rounded,
-            iconColor: AppColors.accent,
-            valueColor: viewModel.totalWithdrawnToday > 0
-                ? AppColors.success
-                : AppColors.textPrimary,
-            subtitle: 'earned wage requests',
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: StatCard(
-            label: 'This Cycle',
-            value: CurrencyFormatter.formatNGN(
-              viewModel.totalWithdrawnThisCycle,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final mobile = constraints.maxWidth < 568;
+        if (mobile) {
+          final w = (constraints.maxWidth - 12) / 2;
+          return Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              SizedBox(
+                width: w,
+                child: StatCard(
+                  label: 'Active Staff',
+                  value: '${viewModel.staffCount}',
+                  icon: Icons.people_rounded,
+                  iconColor: AppColors.primary,
+                  subtitle: 'enrolled employees',
+                ),
+              ),
+              SizedBox(
+                width: w,
+                child: StatCard(
+                  label: "Today's Disbursements",
+                  value:
+                      CurrencyFormatter.formatNGN(viewModel.totalWithdrawnToday),
+                  icon: Icons.send_rounded,
+                  iconColor: AppColors.accent,
+                  valueColor: viewModel.totalWithdrawnToday > 0
+                      ? AppColors.success
+                      : AppColors.textPrimary,
+                  subtitle: 'earned wage requests',
+                ),
+              ),
+              SizedBox(
+                width: w,
+                child: StatCard(
+                  label: 'This Cycle',
+                  value: CurrencyFormatter.formatNGN(
+                    viewModel.totalWithdrawnThisCycle,
+                  ),
+                  icon: Icons.account_balance_wallet_outlined,
+                  iconColor: AppColors.warning,
+                  subtitle: 'total disbursed',
+                ),
+              ),
+            ],
+          );
+        }
+        return Row(
+          children: [
+            Expanded(
+              child: StatCard(
+                label: 'Active Staff',
+                value: '${viewModel.staffCount}',
+                icon: Icons.people_rounded,
+                iconColor: AppColors.primary,
+                subtitle: 'enrolled employees',
+              ),
             ),
-            icon: Icons.account_balance_wallet_outlined,
-            iconColor: AppColors.warning,
-            subtitle: 'total disbursed',
-          ),
-        ),
-      ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: StatCard(
+                label: "Today's Disbursements",
+                value:
+                    CurrencyFormatter.formatNGN(viewModel.totalWithdrawnToday),
+                icon: Icons.send_rounded,
+                iconColor: AppColors.accent,
+                valueColor: viewModel.totalWithdrawnToday > 0
+                    ? AppColors.success
+                    : AppColors.textPrimary,
+                subtitle: 'earned wage requests',
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: StatCard(
+                label: 'This Cycle',
+                value: CurrencyFormatter.formatNGN(
+                  viewModel.totalWithdrawnThisCycle,
+                ),
+                icon: Icons.account_balance_wallet_outlined,
+                iconColor: AppColors.warning,
+                subtitle: 'total disbursed',
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

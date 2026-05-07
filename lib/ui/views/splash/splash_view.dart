@@ -22,7 +22,7 @@ class SplashView extends StackedView<SplashViewModel> {
             _LogoMark(),
             SizedBox(height: 24),
             Text(
-              'EarnedNow',
+              'Kendi',
               style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.w900,

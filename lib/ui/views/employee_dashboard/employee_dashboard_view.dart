@@ -4,7 +4,7 @@ import 'package:stacked/stacked.dart';
 
 import '../../common/app_colors.dart';
 import '../../common/ui_helpers.dart';
-import '../../widgets/earnednow_button.dart';
+import '../../widgets/kendi_button.dart';
 import '../../widgets/live_indicator.dart';
 import '../../widgets/transaction_tile.dart';
 import '../../widgets/wage_progress_card.dart';
@@ -65,7 +65,7 @@ class EmployeeDashboardView extends StackedView<EmployeeDashboardViewModel> {
                           ),
                           verticalSpaceMedium,
                           if (viewModel.canWithdraw)
-                            EarnedNowButton(
+                            KendiButton(
                               label: 'Withdraw Earned Wages',
                               onTap: viewModel.onWithdrawTapped,
                             ),
@@ -120,26 +120,6 @@ class EmployeeDashboardView extends StackedView<EmployeeDashboardViewModel> {
               ),
             ),
           ],
-        ),
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: AppColors.card,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.notifications_outlined,
-            color: AppColors.primary,
-            size: 22,
-          ),
         ),
       ],
     );

@@ -15,6 +15,7 @@ class PayrollPoolView extends StackedView<PayrollPoolViewModel> {
     PayrollPoolViewModel viewModel,
     Widget? child,
   ) {
+    final hPad = MediaQuery.of(context).size.width < 600 ? 16.0 : 32.0;
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
@@ -36,7 +37,7 @@ class PayrollPoolView extends StackedView<PayrollPoolViewModel> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1200),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -74,7 +75,8 @@ class _AccountNumberCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(28),
+      clipBehavior: Clip.hardEdge,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.primary, AppColors.primaryLight],
@@ -93,7 +95,11 @@ class _AccountNumberCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          // Bank badge + label row — wrap on very narrow screens
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Container(
                 padding:
@@ -111,7 +117,6 @@ class _AccountNumberCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
               const Text(
                 'PAYAZA VIRTUAL ACCOUNT',
                 style: TextStyle(
@@ -124,57 +129,38 @@ class _AccountNumberCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
+          // Account number + copy — Expanded prevents overflow
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                viewModel.virtualAccountNumber,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: 4,
+              Expanded(
+                child: Text(
+                  viewModel.virtualAccountNumber,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.5,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 16),
-              GestureDetector(
-                onTap: viewModel.copyAccountNumber,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: viewModel.justCopied
-                        ? Colors.white.withValues(alpha: 0.3)
-                        : Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.4),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        viewModel.justCopied
-                            ? Icons.check_rounded
-                            : Icons.copy_rounded,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        viewModel.justCopied ? 'Copied!' : 'Copy',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: viewModel.copyAccountNumber,
+                icon: Icon(
+                  viewModel.justCopied
+                      ? Icons.check_rounded
+                      : Icons.copy_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                style: IconButton.styleFrom(
+                  backgroundColor: viewModel.justCopied
+                      ? Colors.white.withValues(alpha: 0.3)
+                      : Colors.white24,
+                  padding: const EdgeInsets.all(8),
+                  minimumSize: const Size(36, 36),
                 ),
               ),
             ],
@@ -361,7 +347,7 @@ class _HowToFundCard extends StatelessWidget {
           verticalSpaceMedium,
           const Text(
             'Transfer your monthly payroll to the Providus Bank account number above. '
-            'Funds reflect in your EarnedNow pool within minutes.',
+            'Funds reflect in your Kendi pool within minutes.',
             style: TextStyle(
               fontSize: 14,
               color: AppColors.textPrimary,
@@ -370,7 +356,7 @@ class _HowToFundCard extends StatelessWidget {
           ),
           verticalSpaceMedium,
           const Text(
-            'EarnedNow is the gatekeeper — your funds are held securely until '
+            'Kendi is the gatekeeper — your funds are held securely until '
             'employees request their earned wages. You never disburse manually; '
             'we handle every transfer via Payaza.',
             style: TextStyle(

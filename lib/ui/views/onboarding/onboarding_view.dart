@@ -33,7 +33,7 @@ const _slides = [
     lottiePath: 'assets/lottie/earned.json',
     title: "You've already earned it",
     subtitle:
-        "Every day you work, your wages accrue.\nEarnedNow shows you exactly what's yours.",
+        "Every day you work, your wages accrue.\nKendi shows you exactly what's yours.",
   ),
   _Slide(
     lottiePath: 'assets/lottie/safe.json',

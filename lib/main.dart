@@ -20,15 +20,15 @@ Future<void> main() async {
   try {
     await dotenv.load(fileName: '.env');
   } catch (_) {
-    // .env not available (e.g. web production build).
-    // Values are injected at compile time via --dart-define.
+    // .env not available on web builds — values baked in via --dart-define-from-file=env.json.
+    // Hardcoded defaults ensure the app never crashes even if the flag was omitted.
     dotenv.testLoad(fileInput: [
       'PAYAZA_BASE_URL=${const String.fromEnvironment('PAYAZA_BASE_URL', defaultValue: 'https://api.payaza.africa/live')}',
-      'PAYAZA_SECRET_KEY=${const String.fromEnvironment('PAYAZA_SECRET_KEY')}',
-      'PAYAZA_TRANSACTION_PIN=${const String.fromEnvironment('PAYAZA_TRANSACTION_PIN', defaultValue: '0')}',
-      'X_TENANT_ID=${const String.fromEnvironment('X_TENANT_ID')}',
-      'APP_ENV=${const String.fromEnvironment('APP_ENV', defaultValue: 'production')}',
-      'PAYAZA_SANDBOX_MODE=${const String.fromEnvironment('PAYAZA_SANDBOX_MODE', defaultValue: 'false')}',
+      'PAYAZA_SECRET_KEY=${const String.fromEnvironment('PAYAZA_SECRET_KEY', defaultValue: 'PZ78-SKTEST-0E19C237-5FCD-4C0C-9457-F3DF567712F5')}',
+      'PAYAZA_TRANSACTION_PIN=${const String.fromEnvironment('PAYAZA_TRANSACTION_PIN', defaultValue: '123456')}',
+      'X_TENANT_ID=${const String.fromEnvironment('X_TENANT_ID', defaultValue: 'test')}',
+      'APP_ENV=${const String.fromEnvironment('APP_ENV', defaultValue: 'development')}',
+      'PAYAZA_SANDBOX_MODE=${const String.fromEnvironment('PAYAZA_SANDBOX_MODE', defaultValue: 'true')}',
     ].join('\n'));
   }
   await Firebase.initializeApp(
@@ -40,18 +40,18 @@ Future<void> main() async {
   // Seed Amaka Okonkwo as the demo employee for the hackathon
   locator<AuthService>().setCurrentEmployee(MockData.employees[0]);
   log.i(
-    'EarnedNow initialised — sandbox: ${dotenv.env["PAYAZA_SANDBOX_MODE"]}',
+    'Kendi initialised — sandbox: ${dotenv.env["PAYAZA_SANDBOX_MODE"]}',
   );
-  runApp(const EarnedNowApp());
+  runApp(const KendiApp());
 }
 
-class EarnedNowApp extends StatelessWidget {
-  const EarnedNowApp({super.key});
+class KendiApp extends StatelessWidget {
+  const KendiApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'EarnedNow',
+      title: 'Kendi',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       navigatorKey: StackedService.navigatorKey,

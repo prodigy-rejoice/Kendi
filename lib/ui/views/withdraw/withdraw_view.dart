@@ -5,8 +5,8 @@ import 'package:stacked/stacked.dart';
 import '../../../utils/currency_formatter.dart';
 import '../../common/app_colors.dart';
 import '../../common/ui_helpers.dart';
-import '../../widgets/earnednow_button.dart';
-import '../../widgets/earnednow_text_field.dart';
+import '../../widgets/kendi_button.dart';
+import '../../widgets/kendi_text_field.dart';
 import '../../widgets/loading_overlay.dart';
 import 'withdraw_viewmodel.dart';
 
@@ -87,7 +87,7 @@ class WithdrawView extends StackedView<WithdrawViewModel> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Expanded(
-                        child: EarnedNowTextField(
+                        child: KendiTextField(
                           label: 'Amount to Withdraw',
                           hint: '0',
                           prefixText: '₦ ',
@@ -129,7 +129,7 @@ class WithdrawView extends StackedView<WithdrawViewModel> {
                   // ── Quick amount chips ──────────────────────────────────
                   _QuickAmountRow(viewModel: viewModel),
                   verticalSpaceLarge,
-                  EarnedNowButton(
+                  KendiButton(
                     label: 'Confirm Withdrawal',
                     onTap: viewModel.onConfirmTapped,
                     isLoading: viewModel.busy('processing'),

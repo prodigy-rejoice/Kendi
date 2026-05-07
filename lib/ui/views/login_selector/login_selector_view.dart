@@ -142,7 +142,7 @@ class _BrandHeader extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         const Text(
-          'EarnedNow',
+          'Kendi',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w900,

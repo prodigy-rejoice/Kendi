@@ -69,7 +69,7 @@ class StaffManagementView extends StackedView<StaffManagementViewModel> {
   bool get disposeViewModel => true;
 }
 
-// ── Summary row — 2-col grid on mobile, single row on desktop ─────────────────
+// ── Summary row — Wrap so cards reflow on narrow screens ──────────────────────
 
 class _SummaryRow extends StatelessWidget {
   final StaffManagementViewModel viewModel;
@@ -80,59 +80,15 @@ class _SummaryRow extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final mobile = constraints.maxWidth < 568;
-        if (mobile) {
-          final w = (constraints.maxWidth - 12) / 2;
-          return Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              SizedBox(
-                width: w,
-                child: StatCard(
-                  label: 'Total Staff',
-                  value: '${viewModel.staffCount}',
-                  icon: Icons.people_rounded,
-                  iconColor: AppColors.primary,
-                ),
-              ),
-              SizedBox(
-                width: w,
-                child: StatCard(
-                  label: 'Monthly Payroll',
-                  value: CurrencyFormatter.formatNGN(
-                      viewModel.totalMonthlyPayroll),
-                  icon: Icons.payments_outlined,
-                  iconColor: AppColors.warning,
-                ),
-              ),
-              SizedBox(
-                width: w,
-                child: StatCard(
-                  label: 'Total Accrued',
-                  value: CurrencyFormatter.formatNGN(
-                      viewModel.totalAccruedThisCycle),
-                  icon: Icons.trending_up_rounded,
-                  iconColor: AppColors.accent,
-                  subtitle: 'this month',
-                ),
-              ),
-              SizedBox(
-                width: w,
-                child: StatCard(
-                  label: 'Total Available',
-                  value:
-                      CurrencyFormatter.formatNGN(viewModel.totalAvailable),
-                  icon: Icons.account_balance_wallet_outlined,
-                  iconColor: AppColors.success,
-                  subtitle: 'to request',
-                ),
-              ),
-            ],
-          );
-        }
-        return Row(
+        final cardWidth = mobile
+            ? (constraints.maxWidth - 12) / 2
+            : (constraints.maxWidth - 48) / 4;
+        return Wrap(
+          spacing: 12,
+          runSpacing: 12,
           children: [
-            Expanded(
+            SizedBox(
+              width: cardWidth,
               child: StatCard(
                 label: 'Total Staff',
                 value: '${viewModel.staffCount}',
@@ -140,35 +96,34 @@ class _SummaryRow extends StatelessWidget {
                 iconColor: AppColors.primary,
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
+            SizedBox(
+              width: cardWidth,
               child: StatCard(
                 label: 'Monthly Payroll',
-                value: CurrencyFormatter.formatNGN(
-                    viewModel.totalMonthlyPayroll),
+                value: CurrencyFormatter.formatNGN(viewModel.totalMonthlyPayroll),
                 icon: Icons.payments_outlined,
                 iconColor: AppColors.warning,
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
+            SizedBox(
+              width: cardWidth,
               child: StatCard(
                 label: 'Total Accrued',
                 value: CurrencyFormatter.formatNGN(
                     viewModel.totalAccruedThisCycle),
                 icon: Icons.trending_up_rounded,
                 iconColor: AppColors.accent,
-                subtitle: 'earned so far this month',
+                subtitle: mobile ? 'this month' : 'earned so far this month',
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
+            SizedBox(
+              width: cardWidth,
               child: StatCard(
                 label: 'Total Available',
                 value: CurrencyFormatter.formatNGN(viewModel.totalAvailable),
                 icon: Icons.account_balance_wallet_outlined,
                 iconColor: AppColors.success,
-                subtitle: 'employees can request',
+                subtitle: mobile ? 'to request' : 'employees can request',
               ),
             ),
           ],
@@ -210,19 +165,140 @@ class _StaffList extends StatelessWidget {
     );
   }
 
+  // ── Mobile: card list ─────────────────────────────────────────────────────
+
   Widget _buildCards() {
-    if (viewModel.rows.isEmpty) {
-      return _emptyState();
-    }
-    return Column(
-      children: viewModel.rows
-          .map((row) => _StaffCard(
-                row: row,
-                onTap: () => viewModel.onStaffTapped(row),
-              ))
-          .toList(),
+    if (viewModel.rows.isEmpty) return _emptyState();
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: viewModel.rows.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final row = viewModel.rows[index];
+        final e = row.employee;
+        final a = row.accrual;
+
+        return GestureDetector(
+          onTap: () => viewModel.onStaffTapped(row),
+          child: Card(
+            elevation: 0,
+            color: AppColors.card,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.grey.shade200),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor:
+                            AppColors.primary.withValues(alpha: 0.1),
+                        child: Text(
+                          e.fullName.isNotEmpty ? e.fullName[0] : '?',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              e.fullName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            Text(
+                              e.staffId,
+                              style: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: AppColors.textSecondary,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(height: 1),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _statChip(
+                          'Salary',
+                          CurrencyFormatter.formatNGN(e.monthlySalary)),
+                      _statChip('Days', '${a.daysWorkedThisMonth}'),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _statChip(
+                        'Accrued',
+                        CurrencyFormatter.formatNGN(a.totalAccrued),
+                        color: Colors.blue,
+                      ),
+                      _statChip(
+                        'Available',
+                        CurrencyFormatter.formatNGN(a.availableToWithdraw),
+                        color: a.availableToWithdraw > 0
+                            ? AppColors.success
+                            : AppColors.textSecondary,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
+
+  Widget _statChip(String label, String value, {Color? color}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: color ?? Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Desktop: table ────────────────────────────────────────────────────────
 
   Widget _buildTable() {
     return Container(
@@ -317,123 +393,6 @@ class _StaffList extends StatelessWidget {
               : AppColors.textSecondary,
         ),
       ],
-    );
-  }
-}
-
-// ── Mobile staff card ─────────────────────────────────────────────────────────
-
-class _StaffCard extends StatelessWidget {
-  final StaffRow row;
-  final VoidCallback? onTap;
-  const _StaffCard({required this.row, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final e = row.employee;
-    final a = row.accrual;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child: Text(
-                e.fullName.isNotEmpty ? e.fullName[0] : '?',
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                ),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    e.fullName,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    e.staffId,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Salary: ${CurrencyFormatter.formatNGN(e.monthlySalary)}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    'Days: ${a.daysWorkedThisMonth}  ·  '
-                    'Accrued: ${CurrencyFormatter.formatNGN(a.totalAccrued)}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      const Text(
-                        'Available: ',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      Text(
-                        CurrencyFormatter.formatNGN(a.availableToWithdraw),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: a.availableToWithdraw > 0
-                              ? AppColors.success
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textSecondary,
-              size: 20,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -6,7 +6,7 @@ import 'package:stacked_services/stacked_services.dart';
 import '../../../models/employee.dart';
 import '../../../utils/bank_codes.dart';
 import '../../common/app_colors.dart';
-import '../../widgets/earnednow_button.dart';
+import '../../widgets/kendi_button.dart';
 import 'add_staff_sheet_model.dart';
 
 class AddStaffSheet extends StackedView<AddStaffSheetModel> {
@@ -76,9 +76,7 @@ class AddStaffSheet extends StackedView<AddStaffSheetModel> {
                       completer?.call(SheetResponse(confirmed: true, data: employee)),
                 ),
               'bulk' => _BulkUploadCard(
-                  onDownload: () => completer?.call(
-                    SheetResponse(confirmed: false, data: 'download_template'),
-                  ),
+                  onDownload: viewModel.downloadTemplate,
                   onUpload: () => completer?.call(
                     SheetResponse(confirmed: false, data: 'upload_csv'),
                   ),
@@ -356,7 +354,7 @@ class _SingleStaffForm extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 24),
-          EarnedNowButton(
+          KendiButton(
             label: 'Add Staff Member',
             onTap: () {
               final employee = viewModel.buildEmployee();

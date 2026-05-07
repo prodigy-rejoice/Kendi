@@ -1,10 +1,19 @@
+// ignore: avoid_web_libraries_in_flutter
+import 'dart:html' as html;
+
 import 'package:flutter/widgets.dart';
 import 'package:stacked/stacked.dart';
+import 'package:stacked_services/stacked_services.dart';
 
+import '../../../app/app.locator.dart';
+import '../../../app/app.logger.dart';
 import '../../../models/employee.dart';
 import '../../../utils/bank_codes.dart';
 
 class AddStaffSheetModel extends BaseViewModel {
+  final log = getLogger('AddStaffSheetModel');
+  final _snackbarService = locator<SnackbarService>();
+
   final fullNameController = TextEditingController();
   final staffIdController = TextEditingController();
   final phoneController = TextEditingController();
@@ -90,6 +99,29 @@ class AddStaffSheetModel extends BaseViewModel {
       payDay: selectedPayDay,
       isActive: true,
       employmentStartDate: DateTime.now(),
+    );
+  }
+
+  void downloadTemplate() {
+    log.i('Downloading staff CSV template');
+    const csvContent =
+        'Full Name,Staff ID,Phone Number,Monthly Salary,'
+        'Bank Name,Account Number,Pay Day\n'
+        'Amaka Okonkwo,LGH/NRS/001,+2348011111111,150000,'
+        'GTBANK PLC,0123456789,30\n'
+        'Chidi Nwosu,LGH/LAB/002,+2348022222222,200000,'
+        'ZENITH BANK,9876543210,30\n';
+
+    final blob = html.Blob([csvContent], 'text/csv');
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    html.AnchorElement(href: url)
+      ..setAttribute('download', 'kendi_staff_template.csv')
+      ..click();
+    html.Url.revokeObjectUrl(url);
+
+    _snackbarService.showSnackbar(
+      message: 'Template downloaded — fill in your staff details',
+      duration: const Duration(seconds: 3),
     );
   }
 
